@@ -1,5 +1,4 @@
 #!/bin/bash
-
 _PADCHAR="="
 _ALPHA="LVoJPiCN2R8G90yg+hmFHuacZ1OWMnrsSTXkYpUq/3dlbfKwv6xztjI7DeBE45QA"
 INIT_URL="https://net3.zju.edu.cn/"
@@ -133,16 +132,16 @@ function get_info() {
 
 function init() {
     echo 'Performing ZJU web auth...'
-    local init_res=$(curl -s -L $INIT_URL)
+    local init_res=$(curl --interface "$int" -s -L $INIT_URL)
     ac_id=$(echo "$init_res" | awk -F 'value=' '/ac_id/ {print $2}' | awk -F '"' '{print $2}')
     ip=$(echo "$init_res" | awk -F 'value=' '/user_ip/ {print $2}' | awk -F '"' '{print $2}')
-    randnum=$(shuf -i 1-12345678901234567890 -n 1)
+    randnum=$(shuf -i 1-1234567890 -n 1)
     echo "ip: $ip"
 }
 
 function get_token() {
     local params="callback=jQuery${randnum}_$(($(date +%s%N)/1000000))&username=$username&ip=$ip&_=$(($(date +%s%N)/1000000))"
-    local res=$(curl -s -L "$GET_CHALLENGE_API?$params")
+    local res=$(curl --interface "$int" -s -L "$GET_CHALLENGE_API?$params")
     token=$(echo "$res" | awk -F 'challenge":"' '{print $2}' | awk -F '"' '{print $1}')
 }
 
@@ -156,7 +155,7 @@ function preprocess() {
 function login() {
     i=$(echo -n "$i" | sed 's/{/%7B/g' | sed 's/}/%7D/g' | sed 's/:/%3A/g' | sed 's/+/%2B/g' | sed 's/\//%2F/g' | sed 's/=/%3D/g' | sed 's/,/%2C/g' | sed 's/ /+/g')
     local params="callback=jQuery${randnum}_$(($(date +%s%N)/1000000))&action=login&username=$username&password=%7BMD5%7D$hmd5&ac_id=$ac_id&ip=$ip&chksum=$chksum&info=$i&n=$N&type=$TYPE&os=windows+10&name=windows&double_stack=0&_=$(($(date +%s%N)/1000000))"
-    local res=$(curl -s -L "$SRUN_PORTAL_API?$params")
+    local res=$(curl --interface "$int" -s -L "$SRUN_PORTAL_API?$params")
     if [[ "$res" == *"E0000"* ]]; then
         echo '[Login Successful]'
     elif [[ "$res" == *"ip_already_online_error"* ]]; then
@@ -169,7 +168,7 @@ function login() {
 
 function logout() {
     local params="action=logout"
-    local res=$(curl -s "$SRUN_PORTAL_API?$params")
+    local res=$(curl --interface "$int" -s "$SRUN_PORTAL_API?$params")
     echo "$res"
 }
 
@@ -180,6 +179,7 @@ if [[ "$1" == 'logout' ]]; then
 elif [[ "$1" != "" ]]; then
     username="$1"
     password="$2"
+    int="$3"
 else
     read -p "login/logout: " op
     if [[ "$op" == "logout" ]]; then
