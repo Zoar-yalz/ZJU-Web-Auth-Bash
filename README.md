@@ -7,7 +7,7 @@
 `curl echo openssl awk shuf sed`
 
 ## 登录
-`./zju-web-auth.sh 账号 密码`
+`./zju-web-auth.sh 账号 密码 设备名`
 
 若登录成功，脚本将打印`[Login Successful]`；若已经登录，脚本将打印`[Already Online]`；若登录失败，脚本将打印请求结果。
 ## 退出
